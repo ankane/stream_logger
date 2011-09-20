@@ -26,7 +26,11 @@ class StreamLogger
   end
 
   def format(&block)
-    @format = block
+    if block_given?
+      @format = block
+    else
+      @format
+    end
   end
 
   LEVELS.each do |level|
