@@ -1,6 +1,6 @@
 # StreamLogger
 
-StreamLogger is a super-lightweight logging library that logs to `stdout`.
+StreamLogger is a super-lightweight library that logs to any stream, like `stdout`.
 
 Inspired by [Logs Are Streams, Not Files](http://adam.heroku.com/past/2011/4/1/logs_are_streams_not_files/) by Adam Wiggins.
 
@@ -15,7 +15,7 @@ gem install stream_logger
 ```ruby
 require "stream_logger"
 
-logger = StreamLogger.new
+logger = StreamLogger.new($stdout)
 logger.level = :warn      # Default is :info
 
 logger.debug "It works!"  # Won't appear
