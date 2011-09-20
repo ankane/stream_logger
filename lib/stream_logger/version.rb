@@ -1,0 +1,3 @@
+class StreamLogger
+  VERSION = "0.0.1"
+end
