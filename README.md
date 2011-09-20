@@ -36,7 +36,7 @@ logger.level = :off
 The default format looks like:
 
 ```
-2011-09-20T02:43:45-0700  INFO : I'm informative
+2011-09-20T02:43:43-0700  INFO : I'm informative
 2011-09-20T02:43:44-0700  WARN : You've been warned
 2011-09-20T02:43:44-0700 ERROR : Oh no!
 ```
