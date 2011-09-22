@@ -27,6 +27,10 @@ class StreamLogger
 
     private
 
+    def method_missing(method, *args, &block)
+      IO.method_defined?(method) || super
+    end
+
     def logger
       @logger
     end
