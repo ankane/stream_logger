@@ -27,7 +27,7 @@ class StreamLogger
 
   def level=(level)
     @level    = level.to_sym
-    @level_nb = LEVELS[@level]
+    @level_nb = @level == :off ? 99 : LEVELS[@level]
     raise "Unknown log level: #{level}" unless @level_nb
   end
 
