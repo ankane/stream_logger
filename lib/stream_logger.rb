@@ -85,12 +85,20 @@ class StreamLogger
 
   class << self
 
-    def logify!(stream)
-      $stdout = IOProxy.new(stream)
+    def logify!(stream = STDOUT)
+      @logger = StreamLogger.new(stream)
+      $stdout = IOProxy.new(logger)
+      Kernel.send :define_method, :logger do
+        StreamLogger.logger
+      end
     end
 
     def unlogify!
       $stdout = STDOUT
+    end
+
+    def logger
+      @logger
     end
 
   end

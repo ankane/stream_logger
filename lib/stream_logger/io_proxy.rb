@@ -1,12 +1,8 @@
 class StreamLogger
   class IOProxy
 
-    def initialize(io)
-      @io = io.dup
-    end
-
-    def logger
-      @logger ||= ::StreamLogger.new(@io)
+    def initialize(logger)
+      @logger = logger
     end
 
     def write(message)
@@ -31,8 +27,8 @@ class StreamLogger
 
     private
 
-    def method_missing(method, *args)
-      @io.respond_to?(method) ? @io.send(method, *args) : super
+    def logger
+      @logger
     end
 
   end
