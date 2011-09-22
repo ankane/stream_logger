@@ -3,7 +3,7 @@ require "stream_logger/syslog"
 require "stream_logger/version"
 
 class StreamLogger
-  SEVERITIES = {
+  LEVELS = {
     :debug   => 0,
     :info    => 1,
     :warn    => 2,
@@ -23,14 +23,13 @@ class StreamLogger
   end
 
   attr_reader :level
+  attr_writer :format
 
   def level=(level)
     @level    = level.to_sym
-    @level_nb = SEVERITIES[@level]
+    @level_nb = LEVELS[@level]
     raise "Unknown log level: #{level}" unless @level_nb
   end
-
-  attr_writer :format
 
   def format(&block)
     if block_given?
@@ -40,28 +39,36 @@ class StreamLogger
     end
   end
 
+  def add(level, message = nil, &block)
+    return if @level_nb > LEVELS[level]
+    message = (message || (block && block.call)).to_s
+
+    # Ensure no newline before formatting.
+    message.chomp! if message[-1] == "\n"
+    message = @format.call(level, message) if @format
+
+    # If a newline is necessary then create a new message ending with a newline.
+    # Ensures that the original message is not mutated.
+    message = "#{message}\n" unless message[-1] == ?\n
+
+    # Attempt write.
+    begin
+      @stream.write(message)
+    rescue IOError
+    end
+
+    message
+  end
+
   def <<(message)
     add(:info, message)
   end
 
-  def add(level, message)
-    if @level_nb <= SEVERITIES[level]
-      message = message.call if message.is_a?(Proc)
-      message = @format.call(level, message) if @format
-      begin
-        @stream.write message << "\n"
-      rescue IOError
-        # Do nothing.
-      end
-    end
-  end
-
   # Add methods for each level.
-  SEVERITIES.each do |level, level_nb|
+  LEVELS.each do |level, level_nb|
     class_eval %Q!
     def #{level}(message = nil, &block)
-      message = block if block_given?
-      add(:#{level}, message)
+      add(:#{level}, message, &block)
     end
 
     def #{level}?

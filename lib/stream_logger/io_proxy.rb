@@ -6,23 +6,23 @@ class StreamLogger
     end
 
     def write(message)
-      logger << message unless message == "\n"
+      logger.info message unless message == "\n"
     end
 
     def putc(int)
-      logger << int
+      logger.info int
     end
 
     def puts(message)
-      logger << message
+      logger.info message
     end
 
     def print(message)
-      logger << message
+      logger.info message
     end
 
     def printf(*args)
-      logger << sprintf(*args)
+      logger.info sprintf(*args)
     end
 
     private
