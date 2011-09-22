@@ -17,22 +17,32 @@ logger.debug "It works!"
 
 Simple enough!  Let's look at a more interesting example.
 
-## Wouldn't it be great if...
+## How to logify
 
-You could access the logger from any class or module?
+The `logify!` command is great for rake tasks and background daemons.
 
-Output statements like `puts` are `print` were automatically logged?
+It lets you access the logger from any class or module
+
+**and**
+
+it automatically logs statements like `puts` and `print`.
 
 ```ruby
 require "stream_logger"
 
 StreamLogger.logify!
 
+# Note: You do not need to set logger.
 logger.warn "This is pretty awesome"
+
 puts "This gets logged, too"
 ```
 
-Output statements have a log level of `:info`.
+To revert back to normal, use:
+
+```ruby
+StreamLogger.unlogify!
+```
 
 ## How to change the format
 
