@@ -1,46 +1,33 @@
 require "stream_logger/io_proxy"
+require "stream_logger/syslog"
 require "stream_logger/version"
 
 class StreamLogger
-  LEVELS = [:fatal, :error, :warn, :info, :debug]
-  DEFAULT_LEVEL = :info
+  SEVERITIES = {
+    :debug   => 0,
+    :info    => 1,
+    :warn    => 2,
+    :error   => 3,
+    :fatal   => 4,
+    :unknown => 5
+  }
+
   DEFAULT_FORMAT = Proc.new do |level, message|
     "%s %5s : %s" % [Time.now.strftime("%Y-%m-%dT%H:%M:%S%z"), level.upcase, message]
   end
 
-  # Syslog support.
-  SYSLOG_SEVERITIES = {
-    :fatal => 2,
-    :error => 3,
-    :warn  => 4,
-    :info  => 6,
-    :debug => 7
-  }
-  SYSLOG_FORMAT = Proc.new do |level, message|
-    require "socket" unless defined?(Socket)
-    "<%s>%s %s %s[%s]: %s" % [8 + SYSLOG_SEVERITIES[level], Time.now.strftime("%b %e %T"), Socket.gethostname, $0, Process.pid, message]
-  end
-
-  # Calculate ranks.
-  RANKS = Hash[([:off] + LEVELS).each_with_index.map{|level, i| [level, i]}]
-
-  def initialize(stream = STDOUT)
-    self.level = DEFAULT_LEVEL
-    self.format = DEFAULT_FORMAT
-    @stream = stream
-    begin
-      @stream.sync = true if @stream.respond_to?(:sync=)
-    rescue IOError
-      # Do nothing.
-    end
+  def initialize(stream = STDOUT, level = :info)
+    @stream    = stream
+    @format    = DEFAULT_FORMAT
+    self.level = level
   end
 
   attr_reader :level
 
   def level=(level)
-    @level = level.to_sym
-    @rank = RANKS[@level]
-    raise "Unknown log level: #{level}" unless @rank
+    @level    = level.to_sym
+    @level_nb = SEVERITIES[@level]
+    raise "Unknown log level: #{level}" unless @level_nb
   end
 
   attr_writer :format
@@ -58,9 +45,9 @@ class StreamLogger
   end
 
   def add(level, message)
-    if @rank >= RANKS[level]
+    if @level_nb <= SEVERITIES[level]
       message = message.call if message.is_a?(Proc)
-      message = @format.call(level, message)
+      message = @format.call(level, message) if @format
       begin
         @stream.write message << "\n"
       rescue IOError
@@ -70,7 +57,7 @@ class StreamLogger
   end
 
   # Add methods for each level.
-  LEVELS.each do |level|
+  SEVERITIES.each do |level, level_nb|
     class_eval %Q!
     def #{level}(message = nil, &block)
       message = block if block_given?
@@ -78,7 +65,7 @@ class StreamLogger
     end
 
     def #{level}?
-      @rank >= #{RANKS[level]}
+      @level_nb <= #{level_nb}
     end
     !
   end
