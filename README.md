@@ -1,35 +1,38 @@
 # StreamLogger
 
-StreamLogger is a super-lightweight library that logs to any stream, like `stdout`.
+StreamLogger is a lightweight library that logs to any stream, like `stdout`.
 
-Inspired by [Logs Are Streams, Not Files](http://adam.heroku.com/past/2011/4/1/logs_are_streams_not_files/) by Adam Wiggins.
-
-## How to install
-
-```
-gem install stream_logger
-```
+Logging to a stream is **[much more powerful](http://adam.heroku.com/past/2011/4/1/logs_are_streams_not_files/)** than logging to a file.
 
 ## How to use
 
 ```ruby
 require "stream_logger"
 
-logger = StreamLogger.new($stdout)
-logger.level = :warn      # Default is :info
+logger = StreamLogger.new(STDOUT)
+logger.level = :debug   # Default is :info
 
-logger.debug "It works!"  # Won't appear
-logger.info  "It works!"  # Won't appear
-logger.warn  "It works!"
-logger.error "It works!"
-logger.fatal "It works!"
+logger.debug "It works!"
 ```
 
-To turn logging off, use:
+Simple enough!  Let's look at a more interesting example.
+
+## Wouldn't it be great if...
+
+You could access the logger from any class or module?
+
+Output statements like `puts` are `print` were automatically logged?
 
 ```ruby
-logger.level = :off
+require "stream_logger"
+
+StreamLogger.logify!
+
+logger.warn "This is pretty awesome"
+puts "This gets logged, too"
 ```
+
+Output statements have a log level of `:info`.
 
 ## How to change the format
 
@@ -49,6 +52,20 @@ logger.format do |level, message|
 end
 ```
 
+For your convenience, StreamLogger comes with the syslog format.
+
+```ruby
+logger.format = StreamLogger::SYSLOG_FORMAT
+```
+
+## How to turn logging off
+
+To turn logging off, use:
+
+```ruby
+logger.level = :off
+```
+
 ## How to improve the performance of slow log messages
 
 If you have logging code that takes a while to run, you can defer execution.
@@ -61,9 +78,9 @@ logger.debug { sleep(5); "This code takes a while to run" }
 
 Note: This is only faster for slow log messages. In most cases, use the regular method.
 
-## How to direct the stream
+## How to direct output
 
-Let's assume your program is executed with the command `mydaemon`.
+Let's assume your program is executed with the command `mydaemon` and logs to `stdout`.
 
 ### stdout
 
@@ -87,4 +104,16 @@ mydaemon | tee -a log/mydaemon.log
 
 ```
 mydaemon | logger
+```
+
+### tcp port
+
+```
+mydaemon > /dev/tcp/127.0.0.1/8000
+```
+
+### udp port
+
+```
+mydaemon > /dev/udp/127.0.0.1/514
 ```
