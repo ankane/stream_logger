@@ -48,7 +48,8 @@ class StreamLogger
     message = (message || (block && block.call)).to_s
 
     # Ensure no newline before formatting.
-    message.chomp! if message[-1] == "\n"
+    # chomp! throws an exception on frozen strings.
+    message = message.chomp if message[-1] == "\n"
     message = @format.call(level, message) if @format
 
     # If a newline is necessary then create a new message ending with a newline.
