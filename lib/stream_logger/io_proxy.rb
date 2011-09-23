@@ -5,24 +5,19 @@ class StreamLogger
       @logger = logger
     end
 
+    # Don't need print or printf.
+
     def write(message)
       logger.info message unless message == "\n"
     end
 
-    def putc(int)
-      logger.info int
+    def putc(obj)
+      logger.info obj
     end
 
-    def puts(message)
-      logger.info message
-    end
-
-    def print(message)
-      logger.info message
-    end
-
-    def printf(*args)
-      logger.info sprintf(*args)
+    def puts(*args)
+      args = [""] if args.empty?
+      args.each { |arg| logger.info arg }
     end
 
     private
