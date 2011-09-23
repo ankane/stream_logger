@@ -20,6 +20,10 @@ class StreamLogger
     @stream    = stream
     @format    = DEFAULT_FORMAT
     self.level = level
+    begin
+      @stream.sync = true if @stream.respond_to?(:sync)
+    rescue IOError
+    end
   end
 
   attr_reader :level
